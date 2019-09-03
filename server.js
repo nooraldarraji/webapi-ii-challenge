@@ -74,4 +74,62 @@ server.post('/api/posts', (req, res) => {
    }
 })
 
+server.delete('/api/posts/:id', (req, res) => {
+
+    const postId = req.params.id;
+
+     db.findById(postId) 
+        .then(result => {
+            const postDelete = result 
+            if(result.length >= 1) {
+                db.remove(postId)
+                    .then(results => {
+                        res.status(200).json(postDelete)
+                    })
+                    .catch(err => {
+                        res.status(500).json({ error: "The post could not be removed" })
+                    })
+            } else {
+                res.status(404).json({ message: "The post with the specified ID does not exist." })
+            }
+        })
+        .catch(error => {
+            console.log(error)
+        })
+})
+
+server.put('/api/posts/:id', (req, res) => {
+    
+    const postId = req.params.id;
+    const postUpdate = req.body;
+
+     db.findById(postId) 
+        .then(result => {
+            if (result.length >= 1) {
+
+                 if (postUpdate.title && postUpdate.contents) {
+                    db.update(postId, postUpdate)
+                        .then(results => {
+
+                            db.findById(postId) 
+                                .then(result => {
+                                    res.status(200).json(result)
+                                })
+                                .catch(err => {
+                                    console.log(err)
+                                })
+                        })
+                        .catch(err => {
+                            res.status(500).json({ error: "The post information could not be modified." })
+                        })
+                } else {
+                    res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+                }
+
+             } else {
+                res.status(404).json({ message: "The post with the specified ID does not exist." })
+            }
+        })
+})
+
 module.exports = server
