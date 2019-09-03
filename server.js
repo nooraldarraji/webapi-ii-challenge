@@ -10,7 +10,7 @@ server.get('/', (req, res) => {
 })
 
 server.get('/api/posts', (req, res) => {
-    db.find() 
+    db.find()
         .then(result => res.status(201).json(result))
         .catch(error => res.status(500).json({ error: "The posts information could not be retrieved." }))
 })
@@ -34,7 +34,7 @@ server.get('/api/posts/:id/comments', (req, res) => {
 
     db.findById(postId)
         .then(posts => {
-            if (posts.length >= 1) { 
+            if (posts.length >= 1) {
                 db.findPostComments(Number(postId))
                     .then(result => {
                         res.status(201).json(result)
@@ -42,14 +42,36 @@ server.get('/api/posts/:id/comments', (req, res) => {
                     .catch(error => {
                         res.status(500).json({ error: "The comments information could not be retrieved." })
                     })
-                } else {
-                    res.status(404).json({ message: "The post with the specified ID does not exist." })
-                }
-            })
-            .catch(error => {
-                console.log('Error occured -> ', error)
-            })
+            } else {
+                res.status(404).json({ message: "The post with the specified ID does not exist." })
+            }
+        })
+        .catch(error => {
+            console.log('Error occured -> ', error)
+        })
 })
 
+server.post('/api/posts', (req, res) => {
+
+    ject = req.body;
+
+    if (postObject.contents && postObject.title) {
+       db.insert(postObject)
+           .then(result => {
+               db.findById(result.id)
+                   .then(result => {
+                       res.status(201).json(result)
+                   })
+                   .catch(error => {
+                       console.log('Error occured -> ', error)
+            })
+           })
+           .catch(error => {
+               res.status(500).json({ error: "There was an error while saving the post to the database" })
+           })
+   } else {
+       res.status(400).json({ errorMessage: "Please provide title and contents for the post." })
+   }
+})
 
 module.exports = server
